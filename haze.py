@@ -2,7 +2,6 @@ import numpy as np
 from PIL import Image
 import png
 import matplotlib.pyplot as plt
-from scipy import misc
 
 
 class Haze(object):
@@ -25,6 +24,7 @@ class Haze(object):
         self.alpha_right = None
         self.rain_left = None
         self.rain_right = None
+        self.rain_intensity = 255
         self.haze_map = None
         self.noisy_haze_map = None
         self.rendered_haze_left = None
@@ -37,8 +37,8 @@ class Haze(object):
         self.haze_file_right = 'out/render_haze_right.png'
         self.rain_file_left = 'out/render_rain_left.png'
         self.rain_file_right = 'out/render_rain_right.png'
-        self.haze_rain_left = 'out/haze_rain_left.png'
-        self.haze_rain_right = 'out/haze_rain_right.png'
+        self.haze_rain_left = 'out/render_haze_rain_left.png'
+        self.haze_rain_right = 'out/render_haze_rain_right.png'
         self.read_background_map()
         self.read_disparity_map(mode='pfm')
 
@@ -48,6 +48,9 @@ class Haze(object):
 
     def set_haze_intensity(self, intensity):
         self.haze_intensity = intensity
+
+    def set_rain_intensity(self, intensity):
+        self.rain_intensity = intensity
 
     def set_noise_param(self, mean, variance):
         self.noise_mean = mean
@@ -92,6 +95,10 @@ class Haze(object):
         haze = np.ones((self.height, self.width), dtype=np.float32)
         self.haze_map = haze * self.haze_intensity
 
+    def add_noise(self):
+        noise = self.noise_variance * np.random.random(self.haze_map.shape)
+        self.noisy_haze_map = self.haze_map + noise
+
     def get_depth_map(self, disparity_map):
         mask = (disparity_map == 0)
         disparity_map[mask] = self.infinite_far
@@ -107,6 +114,8 @@ class Haze(object):
     def read_rain(self):
         self.rain_left = np.array(Image.open('data/rain_left.png'))
         self.rain_right = np.array(Image.open('data/rain_right.png'))
+        self.rain_left = self.scale_image(self.rain_left, [128, self.rain_intensity]) - 128
+        self.rain_right = self.scale_image(self.rain_right, [128, self.rain_intensity]) - 128
 
     def synthesize_rain(self):
         self.read_rain()
@@ -206,5 +215,13 @@ class Haze(object):
         data.tofile(f)
         f.close()
 
-    def add_noise(self):
-        self.noisy_haze_map = self.haze_map + self.noise_variance * np.random.random(self.haze_map.shape)
+    @staticmethod
+    def scale_image(image, new_range):
+        min_val = np.min(image).astype(np.float32)
+        max_val = np.max(image).astype(np.float32)
+        min_val_new = np.array(min(new_range), dtype=np.float32)
+        max_val_new = np.array(max(new_range), dtype=np.float32)
+        scaled_image = (image - min_val) / (max_val - min_val) * (max_val_new - min_val_new) + min_val_new
+        return scaled_image.astype(np.uint8)
+
+

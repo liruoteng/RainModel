@@ -2,13 +2,20 @@ import haze
 
 
 h = haze.Haze()
+intensity = 220
+h.set_rain_intensity(intensity)
 
-for beta in range(1, 21):
-    print beta
+for beta in range(0, 200, 5):
     h.set_beta(beta)
-    left_file = 'out/render_haze_left_' + str(beta) + '.png'
-    right_file = 'out/render_haze_right_' + str(beta) + '.png'
-    h.set_haze_output(left_file, right_file)
-    h.synthesize_haze()
-#    h.set_all_output(left_file, right_file)
-#   h.synthesize_all()
+    for contrast in range(120, 201, 5):
+        print "beta: ", beta
+        print "haze intensity: ", contrast
+
+        h.set_haze_intensity(contrast)
+
+        left_file = 'out/render_haze_left_' + 'beta' + str(beta) + 'contrast' + str(contrast) + '.png'
+        right_file = 'out/render_haze_right_' + 'beta' + str(beta) + 'contrast' + str(contrast) + '.png'
+        # h.set_haze_output(left_file, right_file)
+        # h.synthesize_haze()
+        h.set_all_output(left_file, right_file)
+        h.synthesize_all()
