@@ -18,6 +18,7 @@ contrast = []
 AAE = []
 EPE = []
 
+
 for b in range(len(lines)):
     line = lines[b]
     words = line.split()
@@ -28,7 +29,14 @@ for b in range(len(lines)):
         AAE.append(float(words[1]))
         EPE.append(float(words[4]))
 
-'''
+for b in range(len(lines)):
+    line = lines[b]
+    words = line.split()
+    beta.append(int(words[1]))
+    contrast.append(int(words[3]))
+    EPE.append(float(words[5]))
+
+
 # Show AAE error according to beta value
 xt = range(0, 195, 5)
 plt.figure()
@@ -72,7 +80,6 @@ print value
 plt.xticks(xt)
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=-2)
 
-'''
 # Show EPE error according to beta value
 # Show error according to beta value
 xt = range(120, 201, 5)
