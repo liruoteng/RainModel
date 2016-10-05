@@ -16,6 +16,10 @@ class Haze(object):
         self.noise_variance = 10
         self.noise_mean = 0
         self.infinite_far = 1
+        self.left_file = 'data/left0.png'
+        self.right_file = 'data/right0.png'
+        self.rain_left_file = 'data/rain_left.png'
+        self.rain_right_file = 'data/rain_right.png'
         self.left = None
         self.right = None
         self.disp_left = None
@@ -33,15 +37,18 @@ class Haze(object):
         self.rendered_rain_right = None
         self.haze_rain_left_map = None
         self.haze_rain_right_map = None
-        self.haze_file_left = 'out/render_haze_left.png'
-        self.haze_file_right = 'out/render_haze_right.png'
-        self.rain_file_left = 'out/render_rain_left.png'
-        self.rain_file_right = 'out/render_rain_right.png'
+        self.haze_outfile_left = 'out/render_haze_left.png'
+        self.haze_outfile_right = 'out/render_haze_right.png'
+        self.rain_outfile_left = 'out/render_rain_left.png'
+        self.rain_outfile_right = 'out/render_rain_right.png'
         self.haze_rain_left = 'out/render_haze_rain_left.png'
         self.haze_rain_right = 'out/render_haze_rain_right.png'
         self.read_background_map()
         self.read_disparity_map(mode='pfm')
 
+    '''
+    Set up functions
+    '''
     def set_alpha_param(self, focal_length, baseline):
         self.focal_length = focal_length
         self.baseline = baseline
@@ -63,16 +70,24 @@ class Haze(object):
         self.infinite_far = infinite_far
 
     def set_haze_output(self, file_left, file_right):
-        self.haze_file_left = file_left
-        self.haze_file_right = file_right
+        self.haze_outfile_left = file_left
+        self.haze_outfile_right = file_right
 
     def set_rain_output(self, file_left, file_right):
-        self.rain_file_left = file_left
-        self.rain_file_right = file_right
+        self.rain_outfile_left = file_left
+        self.rain_outfile_right = file_right
 
     def set_all_output(self, file_left, file_right):
         self.haze_rain_left = file_left
         self.haze_rain_right = file_right
+
+    def set_background(self, file_left, file_right):
+        self.left_file = file_left
+        self.right_file = file_right
+
+    '''
+    Process
+    '''
 
     def read_disparity_map(self, mode='pfm'):
         if mode == 'pfm':
@@ -83,8 +98,8 @@ class Haze(object):
             self.disp_right = self.read_disp_png('data/disp_right.png')
 
     def read_background_map(self):
-        self.left = self.read_image('data/left0.png')
-        self.right = self.read_image('data/right0.png')
+        self.left = self.read_image(self.left_file)
+        self.right = self.read_image(self.right_file)
         # sanity check
         if self.left.shape == self.right.shape:
             (self.height, self.width) = self.left.shape[0:2]
@@ -112,8 +127,8 @@ class Haze(object):
         self.alpha_right = np.exp(-1 * self.beta * depth_right)
 
     def read_rain(self):
-        self.rain_left = np.array(Image.open('data/rain_left.png'))
-        self.rain_right = np.array(Image.open('data/rain_right.png'))
+        self.rain_left = np.array(Image.open(self.rain_left_file))
+        self.rain_right = np.array(Image.open(self.rain_right_file))
         self.rain_left = self.scale_image(self.rain_left, [128, self.rain_intensity]) - 128
         self.rain_right = self.scale_image(self.rain_right, [128, self.rain_intensity]) - 128
 
@@ -121,8 +136,8 @@ class Haze(object):
         self.read_rain()
         self.rendered_rain_left = self.render_rain(self.left, self.rain_left)
         self.rendered_rain_right = self.render_rain(self.right, self.rain_right)
-        self.write_image(self.rendered_rain_left, self.rain_file_left)
-        self.write_image(self.rendered_rain_left, self.rain_file_right)
+        self.write_image(self.rendered_rain_left, self.rain_outfile_left)
+        self.write_image(self.rendered_rain_left, self.rain_outfile_right)
 
     def synthesize_haze(self):
         self.read_haze()
@@ -130,8 +145,8 @@ class Haze(object):
         self.get_alpha_map()
         self.rendered_haze_left = self.render_haze(self.alpha_left, self.left, self.noisy_haze_map)
         self.rendered_haze_right = self.render_haze(self.alpha_right, self.right, self.noisy_haze_map)
-        self.write_image(self.rendered_haze_left, self.haze_file_left)
-        self.write_image(self.rendered_haze_right, self.haze_file_right)
+        self.write_image(self.rendered_haze_left, self.haze_outfile_left)
+        self.write_image(self.rendered_haze_right, self.haze_outfile_right)
 
     def synthesize_all(self):
         self.read_rain()
@@ -145,6 +160,9 @@ class Haze(object):
         self.write_image(self.haze_rain_left_map, self.haze_rain_left)
         self.write_image(self.haze_rain_right_map, self.haze_rain_right)
 
+    '''
+    Static methods
+    '''
     @staticmethod
     def visualize(img):
         plt.imshow(img)
