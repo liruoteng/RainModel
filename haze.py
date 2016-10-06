@@ -84,6 +84,7 @@ class Haze(object):
     def set_background(self, file_left, file_right):
         self.left_file = file_left
         self.right_file = file_right
+        self.read_background_map()
 
     '''
     Process
