@@ -1,5 +1,6 @@
 #! /usr/bin/python
-import haze
+from lib import haze
+
 """
 This script renders haze and rain to the driving dataset for optical flow training
 Author : Ruoteng LI
@@ -13,8 +14,8 @@ contrast = 130
 h.set_beta(beta)
 h.set_haze_intensity(contrast)
 h.set_rain_intensity(intensity)
-left_imagefile = open('left.txt', 'r')
-right_imagefile = open('right.txt', 'r')
+left_imagefile = open('data/left.txt', 'r')
+right_imagefile = open('data/right.txt', 'r')
 left_images = left_imagefile.readlines()
 right_images = right_imagefile.readlines()
 image_num = len(left_images)

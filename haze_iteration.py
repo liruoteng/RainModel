@@ -1,11 +1,12 @@
 #! /usr/bin/python
-import haze
+from lib import haze
 """
 haze_iteration.py
 This script use iteration to systematically render haze and rain on the background images with different parameters
 Author: Ruoteng Li
 Date: 5 Oct 2016
 """
+
 
 h = haze.Haze()
 intensity = 220

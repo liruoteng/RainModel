@@ -1,7 +1,8 @@
 import numpy as np
 from PIL import Image
-import png
+
 import matplotlib.pyplot as plt
+import png
 
 
 class Haze(object):
@@ -13,7 +14,7 @@ class Haze(object):
         self.height = 0
         self.width = 0
         self.haze_intensity = 200
-        self.noise_variance = 10
+        self.noise_variance = 1
         self.noise_mean = 0
         self.infinite_far = 1
         self.left_file = 'data/left0.png'
