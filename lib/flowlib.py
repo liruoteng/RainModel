@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import numpy as np
 import matplotlib.pyplot as plt
+import png
+import pfm
 UNKNOWN_FLOW_THRESH = 1e7
 
 
@@ -213,26 +215,70 @@ def make_color_wheel():
     return colorwheel
 
 
-def write_flow(map, filename):
+def disp_to_flow(disp, filename):
     f = open(filename, 'wb')
     magic = np.array([202021.25], dtype=np.float32)
-    (height, width) = map.shape
+    (height, width) = disp.shape[0:2]
     w = np.array([width], dtype=np.int32)
-    h  = np.array([height], dtype=np.int32 )
+    h = np.array([height], dtype=np.int32)
     empty_map = np.zeros((height, width), dtype=np.float32)
-    data = np.dstack((map, empty_map))
+    data = np.dstack((disp, empty_map))
     magic.tofile(f)
     w.tofile(f)
     h.tofile(f)
     data.tofile(f)
     f.close()
 
-def image_adjust(img, sz):
+
+def write_flow(flow, filename):
+    f = open(filename, 'wb')
+    magic = np.array([202021.25], dtype=np.float32)
+    (height, width) = flow.shape[0:2]
+    w = np.array([width], dtype=np.int32)
+    h = np.array([height], dtype=np.int32)
+    magic.tofile(f)
+    w.tofile(f)
+    h.tofile(f)
+    flow.tofile(f)
+    f.close()
+
+
+def scale_image(image, new_range):
+    min_val = np.min(image).astype(np.float32)
+    max_val = np.max(image).astype(np.float32)
+    min_val_new = np.array(min(new_range), dtype=np.float32)
+    max_val_new = np.array(max(new_range), dtype=np.float32)
+    scaled_image = (image - min_val) / (max_val - min_val) * (max_val_new - min_val_new) + min_val_new
+    return scaled_image.astype(np.uint8)
+
+
+def read_png(flow_file):
     """
-    Adjust image to size
-    :param img: array of image to be resized
-    :param sz: tuple value (H,W) height x width
-    :return: adjusted image
+    Read kitti flow from .png file
+    :param flow_file:
+    :return:
     """
-    from scipy import misc as mc
-    return mc.imresize(img, size=sz)
+    image_object = png.Reader(filename=flow_file)
+    image_direct = image_object.asDirect()
+    image_data = list(image_direct[2])
+    (w, h) = image_direct[3]['size']
+    channel = len(image_data[0]) / w
+    flow = np.zeros((h, w, channel), dtype=np.uint16)
+    for i in range(len(image_data)):
+        for j in range(channel):
+            flow[i, :, j] = image_data[i][j::channel]
+    return flow[:, :, 0] / 256
+
+
+def read_pfm(flow_file):
+    import pfm
+    (data, scale) = pfm.readPFM(flow_file)
+    return data
+
+
+def pfm_to_flo(pfm_file):
+    flow_filename = pfm_file[0:pfm_file.find('.pfm')] + '.flo'
+    (data, scale) = pfm.readPFM(pfm_file)
+    flow = data[:, :, 0:2]
+    write_flow(flow, flow_filename)
+
