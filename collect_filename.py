@@ -5,21 +5,23 @@ Collect drive data set files
 import os
 
 
-f = open('left.txt', 'wb')
-g = open('right.txt', 'wb')
+f = open('left_rain.txt', 'wb')
+g = open('right_rain.txt', 'wb')
 left = []
 right = []
 
-for root, dirs, files in os.walk('../../../data/drive/drive_flow'):
+for root, dirs, files in os.walk('../../../data/drive/drive_cleanpass_aug'):
     for dirname in dirs:
         if dirname == 'left':
             files = os.listdir(root + '/left')
             for filename in files:
-                left.append(os.path.join(root + '/left', filename))
+                if filename.find('_s.png') != -1:
+                    left.append(os.path.join(root + '/left', filename))
         elif dirname == 'right':
             files = os.listdir(root + '/right')
             for filename in files:
-                right.append(os.path.join(root + '/right', filename))
+                if filename.find('_s.png') != -1:
+                    right.append(os.path.join(root + '/right', filename))
 
 left.sort()
 right.sort()

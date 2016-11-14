@@ -25,6 +25,8 @@ class Haze(object):
         self.right = None
         self.disp_left = None
         self.disp_right = None
+        self.disp_left_file = 'data/disp_left.pfm'
+        self.disp_right_file = 'data/disp_right.pfm'
         self.alpha_left = None
         self.alpha_right = None
         self.rain_left = None
@@ -87,17 +89,29 @@ class Haze(object):
         self.right_file = file_right
         self.read_background_map()
 
+    def set_disparity_map(self, file_left, file_right):
+        self.disp_left_file = file_left
+        self.disp_right_file = file_right
+        if file_left.find('.pfm') != -1:
+            self.read_disparity_map(mode='pfm')
+        else:
+            self.read_disparity_map()
+
+    def set_rain_file(self, file_left, file_right):
+        self.rain_left_file = file_left
+        self.rain_right_file = file_right
+        
     '''
     Process
     '''
 
     def read_disparity_map(self, mode='pfm'):
         if mode == 'pfm':
-            self.disp_left = self.read_disp_pfm('data/disp_left.pfm')
-            self.disp_right = self.read_disp_pfm('data/disp_right.pfm')
+            self.disp_left = self.read_disp_pfm(self.disp_left_file)
+            self.disp_right = self.read_disp_pfm(self.disp_right_file)
         else:
-            self.disp_left = self.read_disp_png('data/disp_left.png')
-            self.disp_right = self.read_disp_png('data/disp_right.png')
+            self.disp_left = self.read_disp_png(self.disp_left_file)
+            self.disp_right = self.read_disp_png(self.disp_right_file)
 
     def read_background_map(self):
         self.left = self.read_image(self.left_file)
